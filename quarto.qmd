@@ -1,0 +1,498 @@
+---
+title: "Quarto"
+author: "Uros Godnov"
+subtitle: "How to report and reproduce your findings"
+format:
+  revealjs:
+    theme: simple 
+    slide-number: true
+    embed-resources: true
+    preview-links: auto
+    footer: <https://quarto.org>
+    transition: slide
+    background-transition: fade
+---
+
+## Quarto - introduction {.smaller}
+
+-   Released in June 2022.
+-   Open-source scientific and technical publishing system.
+-   Facilitates the creation of dynamic, reproducible documents, presentations, and reports.
+-   Aims to produce high-quality, publication-ready outputs.
+-   Supports multiple programming languages including R, Python, and Julia.
+-   Enhances the reproducibility of scientific research.
+-   Allows embedding of source code in documents for transparency.
+
+## Historical development {.smaller}
+
+-   Evolution of Computational Document Authoring:
+
+    -   Before Quarto, R Markdown was a popular tool in the data science community for creating dynamic, reproducible documents using R. Increasing Demand for Multi-Language Support:
+
+    -   As the data science field grew, there was a rising demand for tools that could support multiple programming languages (e.g., Python, Julia) alongside R. Integration with Jupyter Ecosystem:
+
+-   Jupyter Notebooks gained popularity for interactive computing, creating a need for tools that could bridge R Markdown and Jupyter. Quarto's Development:
+
+-   Quarto was developed to meet these evolving needs, offering a more flexible and powerful platform. It extended the capabilities of R Markdown by integrating with the Jupyter ecosystem and supporting multiple languages.
+
+## Benefits {.smaller}
+
+-   Enhanced Reproducibility in Scientific Research:
+
+    -   Facilitates the creation of documents where data, code, and narrative are closely intertwined.
+
+    -   Improves the transparency and verifiability of research findings.
+
+-   Easy Collaboration Features:
+
+    -   Supports collaborative workflows, making it simpler for teams to work together on documents.
+
+    -   Version control friendly, integrates well with platforms like GitHub.
+
+-   High-Quality Publishing Outputs:
+
+    -   Capable of generating documents in various formats including HTML, PDF, and Word.
+
+    -   Ensures professional-grade layout and typesetting for publication-ready outputs.
+
+## Components
+
+-   YAML header
+-   code chunks
+-   text
+
+## YAML header - 1 {.smaller}
+
+-   **Location and Structure**:
+
+    -   At the top of the document, enclosed between **`---`** lines.
+
+    -   Written in key-value pairs using YAML syntax.
+
+-   **Document Metadata**:
+
+    -   Title, author, and date.
+
+    -   Additional info like keywords and abstract.
+
+-   **Format Specifications**:
+
+    -   Determines output format (HTML, PDF, Word).
+
+    -   Customization options for each format.
+
+-   **Code Chunk Options**:
+
+    -   Global settings for all code blocks.
+
+    -   Controls echo, warning, message, and error displays.
+
+
+
+## YAML header - 2 {.smaller}
+
+-   **Table of Contents and Navigation**:
+
+    -   Configuration of depth, appearance, and placement.
+
+    -   Section numbering enable/disable option.
+
+-   **Citations and Bibliography**:
+
+    -   Settings for citation processing.
+
+    -   Bibliography file specification and style guide selection.
+
+-   **Language Settings**:
+
+    -   Controls for multilingual document support.
+
+-   **Cross-Referencing and Linking**:
+
+    -   Configuration for figure and table referencing.
+
+    -   Hyperlinking and URL management settings.
+
+## YAML - 3
+
+::: columns
+::: {.column width="50%"}
+![](images/titleAndAuthor.png){width="485"}
+
+![](images/styling.png){width="481"}
+:::
+
+::: {.column width="50%"}
+![](images/execution.png){width="481"}
+:::
+:::
+
+
+
+## Demo
+
+- create a new quarto document
+
+- replace the current YAML with this one:
+
+```r
+---
+title: "Learning Quarto"
+date: "2024-01-01"
+subtitle: "The power of Quarto"
+author: "Jane Doe"
+abstract: "Quarto is a powerful tool for data science. We love Quarto!"
+format: 
+    html:
+      toc: true
+      toc_float: true
+      toc-location: left
+      mainfont: cursive
+      embed-resources: true
+---
+```
+- save and render document
+
+
+## Demo
+
+- add new header ***Loading packages** in the begining
+- create new code chunk:
+
+```r
+library(tidyverse)
+library(knitr)
+library(gt)
+```
+- render the document. Observe.
+
+
+## Executable Code {.smaller}
+
+```r
+#| echo: true
+#| fig-width: 10
+#| fig-height: 4.5
+library(ggplot2)
+ggplot(mtcars, aes(hp, mpg, color = am)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method = "loess")
+```
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 4.5
+library(ggplot2)
+ggplot(mtcars, aes(hp, mpg, color = am)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method = "loess")
+```
+
+::: footer
+Learn more: [Executable Code](https://quarto.org/docs/presentations/revealjs/#executable-code)
+:::
+
+
+## Demo {.smaller}
+
+- in the existing quarto create a new code chunk
+- copy the following code:
+
+```r
+#| echo: true
+#| fig-width: 10
+#| fig-height: 4.5
+library(ggplot2)
+ggplot(mtcars, aes(hp, mpg, color = am)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method = "loess")
+```
+- render the document. What can you observe?
+- change the echo to false and render again. 
+- in YAML header add:
+
+```r
+execution:
+    echo: false
+```
+- render and observe. What changed?
+
+## Update snippets
+
+- go to [Snippet](https://posit.co/blog/6-productivity-hacks-for-quarto/)
+- copy snippets to RStudio > Tools > Edit Code Snippets
+- use Shift + Tab to autocomplete
+
+![](images/clipboard-703634262.png)
+
+## Column Layout - 1 {.smaller}
+
+Arrange content into columns of varying widths:
+
+```r
+::: columns
+::: {.column width="35%"}
+#### Motor Trend Car Road Tests
+
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles.
+:::
+
+::: {.column width="3%"}
+:::
+
+::: {.column width="62%"}
+```{r}
+knitr::kable(head(mtcars)[,c("mpg",	"cyl", "disp", "hp", "wt")])
+```
+:::
+:::
+```
+
+## Column Layout - 2 {.smaller}
+
+
+::: columns
+::: {.column width="35%"}
+#### Motor Trend Car Road Tests
+
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles.
+:::
+
+::: {.column width="3%"}
+:::
+
+::: {.column width="62%"}
+```{r}
+knitr::kable(head(mtcars)[,c("mpg",	"cyl", "disp", "hp", "wt")])
+```
+:::
+
+:::
+
+::: footer
+Learn more: [Multiple Columns](https://quarto.org/docs/presentations/revealjs/#multiple-columns)
+:::
+
+
+## Demo {.smaller}
+
+
+- to existing Quarto document add new header ***Columns***
+- create 2 columns, with 50 % and 50 % width
+- in the first column add a code chunk:
+```r
+airquality %>% 
+   head() %>% 
+   kable()
+```
+- in the second column add a code chunk:
+```r
+airquality %>% 
+   head() %>% 
+   gt()
+```
+- render and observe
+
+## Important
+
+- displaying tables can be tricky
+- ***never*** just list a name of a dataframe
+- if dataframe is huge, rendering will take forever
+- always go with the packages that are meant to display tables
+- control the number of rows
+
+## Cross-referencing a table
+
+- label has to start with "tbl-"
+```r
+#| label: tbl-airquality
+#| tbl-cap: "The airquality in New York in 1973"
+
+airquality %>% 
+   head() %>% 
+   gt()
+
+```
+- in a code you have to reference a table with "@" prefix:
+
+```r
+In the table @tbl-airquality we collected data for 5 months.
+```
+## Demo
+
+- create a new header called ***Cross referencing a table***.
+- copy the code from previous slide and the text under new header
+- render and observe
+
+## Cross-referencing a picture (plot) 
+
+- label has to start with "fig-"
+- bug in quarto, it doesnt display title nor referencing part
+
+```r
+#| label: fig-airquality
+#| fig-cap: "Ozone vs. temp"
+
+airquality %>% 
+   dplyr::select(Ozone, Temp) %>% 
+   ggplot(., aes(x=Temp, y=Ozone))+
+   geom_point()
+
+The chart @fig-airquality shows the relationship between Ozone and Temp.
+
+```
+
+
+## Cross-referencing a inserted picture
+
+- name must begin with "#fig-" prefix
+
+```r
+![kitten](mini/images/kitten-300-200.jpeg){#fig-kitten}
+
+
+The kitten in the @fig-kitten is hungry.
+```
+
+## Demo
+
+- in the current Quarto add header ***Cross referencing a figure***.
+- find a picture online and cross-reference it
+- render and observe
+
+
+
+## Tabsets - 1 {.smaller .scrollable transition="slide"}
+
+```r
+::: panel-tabset
+### Plot
+
+```{r}
+library(ggplot2)
+ggplot(mtcars, aes(hp, mpg, color = am)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method = "loess")
+```
+
+### Data
+
+```{r}
+knitr::kable(mtcars)
+```
+:::
+```
+
+## Tabsets - 2
+
+::: panel-tabset
+
+### Plot 
+
+```{r}
+library(ggplot2)
+ggplot(mtcars, aes(hp, mpg, color = am)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method = "loess")
+```
+
+### Data {.smaller}
+
+```{r}
+knitr::kable(mtcars)
+```
+:::
+
+::: footer
+Learn more: [Tabsets](https://quarto.org/docs/presentations/revealjs/#tabsets)
+:::
+
+
+## Demo
+
+- add mtcars header to quarto document
+- create tabset panel with 3 tabsets
+- name them *dummy1*, mtcars, *dummy2*
+- create a chunk for the second tabset and add:
+
+```r
+   mtcars %>% 
+        head() %>% 
+        gt()
+```
+## Callout bloks - 1
+
+```r
+::: {.callout-note}
+Note that there are five types of callouts, including:
+`note`, `warning`, `important`, `tip`, and `caution`.
+:::
+
+::: {.callout-tip}
+## Tip with Title
+
+This is an example of a callout with a title.
+:::
+
+::: {.callout-warning}
+## Standardization
+
+This is an example of a warning.
+:::
+```
+
+## Callout bloks - 2
+
+::: {.callout-note}
+Note that there are five types of callouts, including:
+`note`, `warning`, `important`, `tip`, and `caution`.
+:::
+
+::: {.callout-tip}
+## Tip with Title
+
+This is an example of a callout with a title.
+:::
+
+::: {.callout-warning}
+## Standardization
+
+This is an example of a warning.
+:::
+
+## Demo
+
+- add new ***Callout warning*** after loading packages. State the document is meant only for learning purposes.
+
+## Interactive Slides {.smaller transition="slide"}
+
+Include Jupyter widgets and htmlwidgets in your presentations
+
+```{r}
+#| echo: false
+#| fig-height: 5
+library(leaflet)
+leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lat=49.4631, lng=1.0638, popup="NEOMA")
+```
+
+
+## Cache
+
+- large chunks --> use cache
+```r
+#| cache: true
+
+Sys.sleep(5)
+```
+
+- add new header ***Cache***.
+- copy above code to the new chunk
+- render, observe
+- render again and observe
+
+
+
+

@@ -1,0 +1,626 @@
+---
+title: "Graphics"
+author: "Uros Godnov"
+date: ""
+output: ioslides_presentation
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+packages=c("lattice","ggplot2","tibble","gridExtra","knitr",
+           "tidyverse","patchwork","gganimate")
+package.check <- lapply(packages, FUN = function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x, dependencies = TRUE)
+    library(x, character.only = TRUE)
+  }
+})
+```
+
+## Graphics
+
+-   base: old system
+-   lattice: creating function to plot
+-   ggplot2
+
+## Base
+
+-   example of a base graphics
+
+```{r}
+
+index<-data.frame(year=2007:2016, pop=sample(10000:20000, size=10))
+
+plot(index$year,index$pop)
+```
+
+## Base - lines
+
+-   type lines
+
+```{r}
+#lines
+plot(index$year,index$pop, type="l")
+```
+
+## Base - histrogram
+
+-   type histogram
+
+```{r}
+plot(index$year,index$pop, type="h")
+```
+
+## Base - title and axis labels
+
+-   adding title and axis labels
+
+```{r}
+
+plot(index$year,index$pop, type="l", main="Population by year",
+     xlab="year",ylab="population")
+```
+
+## Lab
+
+-   use mtcars dataset and create a line plot where cyl must be on x
+    axis and mean mpg on y axis
+
+## Lattice - creating a function
+
+-   pop\~year or mean mpg\~cyl
+
+```{r}
+
+lattice::dotplot(year~pop,data=index,main="Population by year",
+        ylab="year",xlab="population")
+```
+
+## Lattice - problem with y-values {.smaller}
+
+-   we must change year values to factors
+
+```{r}
+index$year<-as.factor(index$year)
+lattice::dotplot(year~pop,data=index,main="Population by year",
+        ylab="year",xlab="population")
+```
+
+## Lattice - histrogram
+
+```{r}
+histogram(year~pop,data=index)
+```
+
+\#\#Lattice - more complex formula
+
+```{r}
+xyplot(mpg~wt | factor(cyl), data=mtcars, pch=19,
+                main="MPG vs Wt", xlab="Wt/1,000",  ylab="MPG")
+```
+
+## Lab
+
+-   use mtcars dataset and create a barchart of mean mpg for number of
+    gears per cyl
+
+## ggplot2
+
+::: {.columns style="display: flex;"}
+::: {.column width="35%"}
+-   Foundation for many graphics applications:
+
+    -   ggplot2
+    -   Tableau
+    -   Vega-Lite
+:::
+
+::: {.column width="65%"}
+```{r out.width = "65%", fig.align='right', out.height="65%", echo=FALSE}
+include_graphics("./SourceFigures/GrammarOfGraphics.jpg")
+```
+:::
+:::
+
+## ggplot2 - The idea
+
+::: {.columns}
+::: {.column width="50%"}
+```{r out.width = "50%", fig.align='center', out.height="50%", echo=FALSE}
+include_graphics("./SourceFigures/idea1.jpg")
+```
+:::
+
+::: {.column width="50%"}
+```{r out.width = "50%", fig.align='center', out.height="50%", echo=FALSE}
+include_graphics("./SourceFigures/idea2.jpg")
+```
+:::
+:::
+
+## ggplot2
+
+```{r out.width = "80%", fig.align='center', out.height="80%", echo=FALSE}
+include_graphics("./SourceFigures/decomposition.jpg")
+```
+
+## ggplot2
+
+-   data: data.frame
+-   aes: mapping data to properties; color, format and size
+-   stats: transforms input variables to display values
+-   scales: translate between variable ranges and properties ranges -
+    categories -\> colours; numbers -\> positions
+-   geoms: geometric objects (points, lines, ...)
+-   facets: forms a matrix of panels defined by row and column faceting
+    variable
+-   coordinates: defines the phiysical mapping of the aesthetics to the
+    paper
+-   themes: every part of the graphic that is not linked to the data
+
+## ggplot2 - basic object {.smaller}
+
+-   which data to plot
+-   which columns to use for x and y
+-   how to draw the plot
+-   "+" is used to combine the ggplot2 elements
+
+```{r out.width = '50%' }
+
+ggplot(data=faithful,
+       mapping=aes(x=eruptions,
+                   y=waiting))+
+  geom_point()
+```
+
+## ggplot2 - different syntax {.smaller}
+
+    ggplot(data=faithful)+
+      geom_point(mapping=aes(x=eruptions,
+                       y=waiting))
+
+    ggplot()+
+      geom_point(data=faithful,mapping=aes(x=eruptions,
+                       y=waiting))
+
+## ggplot2 - adding colour
+
+-   we can create subgroups in ggplot2 with colour parameter
+
+```{r out.width = '80%' }
+
+ggplot(data=faithful)+
+  geom_point(mapping=aes(x=eruptions,y=waiting,
+                         colour=eruptions<3))
+```
+
+## ggplot2 - different geometry {.smaller}
+
+-   some geoms only need a single mapping and will calculate the rest
+    for you
+
+```{r out.width = '80%', warning=FALSE}
+ggplot(data=faithful)+
+  geom_histogram(mapping=aes(x=eruptions))
+```
+
+## ggplot2 - many layers {.smaller}
+
+-   layers are stacked int the order of code appearance
+
+```{r out.width = '75%' }
+ggplot(data=faithful,
+       mapping=aes(x=eruptions,
+                   y=waiting))+
+  geom_density_2d()+
+  geom_point()
+```
+
+## Lab
+
+-   open ggplot2.txt. Solve excercises 1-4!
+
+## ggplot2 - statistics - 1 {.smaller}
+
+::: {.columns style="display: flex;"}
+::: {.column width="25%"}
+-   geom_bar uses stat_count() by default
+
+```{=html}
+<!-- -->
+```
+    ggplot(mpg) + 
+      geom_bar(aes(x = class))
+:::
+
+::: {.column width="75%"}
+```{r echo=FALSE, out.width='100%'}
+ggplot(mpg) + 
+  geom_bar(aes(x = class))
+```
+:::
+:::
+
+## ggplot2 - statistics - 2 {.smaller}
+
+::: {.columns style="display: flex;"}
+::: {.column width="25%"}
+-   you can pre-calculate
+-   and use stat = 'identity'
+
+```{=html}
+<!-- -->
+```
+    mpg_counted <- mpg %>% 
+      count(class, name = 'count')
+      
+    ggplot(mpg_counted) + 
+      geom_bar(aes(x = class, 
+                  y = count), 
+            stat = 'identity')
+:::
+
+::: {.column width="75%"}
+```{r echo=FALSE, out.width='100%'}
+mpg_counted <- mpg %>% 
+  count(class, name = 'count')
+ggplot(mpg_counted) + 
+  geom_bar(aes(x = class, y = count),
+           stat = 'identity')
+```
+:::
+:::
+
+## ggplot2 - statistics - 3 {.smaller}
+
+::: {.columns style="display: flex;"}
+::: {.column width="25%"}
+-   using after_stat (ggplot2 ver3.3.0)
+-   modifying mapping from stats
+
+```{=html}
+<!-- -->
+```
+    ggplot(mpg) + 
+      geom_bar(aes(x = class, 
+      y = after_stat(100 * count / 
+                      sum(count))))
+:::
+
+::: {.column width="75%"}
+```{r echo=FALSE, out.width='100%'}
+ggplot(mpg) + 
+  geom_bar(aes(x = class, 
+  y = after_stat(100 * count / 
+                  sum(count))))
+```
+
+Values calculated by the stat is available with the `after_stat()`
+function inside `aes()`
+:::
+:::
+
+## Lab
+
+-   open ggplot2 and solve the 5th excercise
+-   additional hint:...+ stat_summary(aes(x = class, y = hwy),fun=?,
+    geom = "point", color=?)
+
+## ggplot2 - scales - 1 {.smaller}
+
+::: {.columns style="display: flex;"}
+::: {.column width="25%"}
+    ggplot(mpg) + 
+      geom_point(
+      aes(x = displ, 
+          y = hwy, 
+      colour = class))
+:::
+
+::: {.column width="75%"}
+```{r echo=FALSE, out.width='100%'}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, 
+  colour = class))
+```
+
+-   scales define how the mapping you specify inside `aes()` should
+    happen. All mappings have an associated scale even if not specified
+-   based on the vector type of a class,a discrete colour is picked
+:::
+:::
+
+## ggplot2 - scales - 2 {.smaller}
+
+-   we can take control by adding one explicitly
+-   RColorBrewer::display.brewer.all()
+
+```{r out.width='80%'}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = class)) + 
+  scale_colour_brewer(type = 'qual')
+```
+
+## ggplot2 - scales - 3 {.smaller}
+
+-   positional mappings (x and y) also have associated scales.
+
+```{r out.width='80%'}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  scale_x_continuous(breaks = c(3, 5, 6)) + 
+  scale_y_continuous(trans = 'log10')
+```
+
+## Lab
+
+-   open ggplot2 and solve the 6-7 excercises
+
+## ggplot2 - facet {.smaller}
+
+-   the facet defines how data is split among panels. The default facet
+    (`facet_null()`) puts all the data in a single panel
+-   `facet_wrap()` and `facet_grid()` allows you to specify different
+    types of small multiples
+-   mind the scales
+
+```{r out.width='55%'}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class)
+```
+
+## Lab
+
+-   open ggplot2 and solve the 8-9 excercises
+-   scales and space can have free_x, free_y and free values
+
+## ggplot2 - coordinates - 1 {.smaller}
+
+-   the coordinate system is the fabric you draw your layers on in the
+    end
+-   the default \`coord_cartesion provides the standard rectangular x-y
+    coordinate system
+-   changing the coordinate system can have dramatic effects
+
+```{r out.width='55%'}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_polar()
+```
+
+## ggplot2 - coordinates - 2 {.smaller}
+
+-   changing mapping
+
+```{r out.width='90%'}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_polar(theta = 'y') + 
+  expand_limits(y = 70)
+```
+
+## ggplot2 - coordinates - 3 {.smaller}
+
+-   zooming with scales removes data outside limits
+
+```{r out.width='90%'}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  scale_y_continuous(limits = c(0, 40))
+```
+
+## ggplot2 - coordinates - 4 {.smaller}
+
+-   zooming with coords creates proper zoom
+
+```{r out.width='90%'}
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_cartesian(ylim = c(0, 40))
+```
+
+## ggplot2 - coordinates - 5 {.smaller}
+
+-   scale vs. coordinate transformation
+
+```{r out.width='60%'}
+scale<-ggplot(diamonds, aes(carat, price)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10()
+coord<-ggplot(diamonds, aes(carat, price)) +
+  geom_point() +
+  coord_trans(x = "log10", y = "log10")
+(scale | coord)
+```
+
+## Lab
+
+-   open ggplot2 and solve the 10th excercise
+
+## ggplot2 - themes - 1 {.smaller}
+
+-   theming defines the feel and look of your final visualisation
+-   it is very easy to change looks with a prebuild theme
+-   few themes in ggplot2 package
+-   for more install ggthemes package
+
+```{r out.width='60%'}
+
+ggplot(mpg) + 
+  geom_bar(aes(y = class)) + 
+  facet_wrap(~year) + 
+  theme_minimal()
+```
+
+## ggplot2 - themes - 2 {.smaller}
+
+    ggplot(mpg) + 
+      geom_bar(aes(y = class)) + 
+      facet_wrap(~year) + 
+      labs(title = "Number of car models per class",
+           caption = "source: http://fueleconomy.gov",
+           x = NULL,
+           y = NULL) +
+      scale_x_continuous(expand = c(0, NA)) + 
+      theme_minimal() + 
+      theme(
+        text = element_text('Avenir Next Condensed'),
+        strip.text = element_text(face = 'bold', hjust = 0),
+        plot.caption = element_text(face = 'italic'),
+        panel.grid.major = element_line('white', size = 0.5),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.ontop = TRUE
+      )
+
+## ggplot2 - themes - 3 {.smaller}
+
+```{r echo=FALSE}
+ggplot(mpg) + 
+  geom_bar(aes(y = class)) + 
+  facet_wrap(~year) + 
+  labs(title = "Number of car models per class",
+       caption = "source: http://fueleconomy.gov",
+       x = NULL,
+       y = NULL) +
+  scale_x_continuous(expand = c(0, NA)) + 
+  theme_minimal() + 
+  theme(
+    text = element_text('Avenir Next Condensed'),
+    strip.text = element_text(face = 'bold', hjust = 0),
+    plot.caption = element_text(face = 'italic'),
+    panel.grid.major = element_line('white', size = 0.5),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.ontop = TRUE
+  )
+```
+
+## ggplot GUI
+
+-   package esquisse
+-   generates code
+-   copy+paste code
+
+```{r eval=FALSE}
+library(esquisse)
+esquisser(airquality)
+```
+
+```{r echo=FALSE, out.width="70%"}
+
+include_graphics("./Slike/ggplot2Gui.jpg")
+
+```
+
+
+## ggplot2 - extensions {.smaller}
+
+-   plot composition:
+
+    -   gridExtra::grid.arange()
+    -   ggpubr::ggarange()
+    -   patchwork
+
+## ggplot2 - plot composition - 1 {.smaller}
+
+```{r echo=FALSE, out.width='30%'}
+p1 <- ggplot(msleep) + 
+  geom_boxplot(aes(x = sleep_total, y = vore, fill = vore))
+p1
+p2 <- ggplot(msleep) + 
+  geom_bar(aes(y = vore, fill = vore))
+p2
+p3 <- ggplot(msleep) + 
+  geom_point(aes(x = bodywt, y = sleep_total, colour = vore)) + 
+  scale_x_log10()
+p3
+```
+
+## ggplot2 - plot composition - 2 {.smaller}
+
+-   combining them with patchwork is a breeze using the different
+    operators
+
+```{r out.width='40%'}
+(p1 | p2) / 
+   p3
+```
+
+## ggplot2 - plot composition - 3 {.smaller}
+
+-   combining them with patchwork is a breeze using the different
+    operators
+-   plot_layout(guides = 'collect') collects the legends
+
+```{r out.width='40%'}
+p_all <- (p1 | p2) / 
+            p3
+p_all + plot_layout(guides = 'collect')
+```
+
+## Lab
+
+Patchwork will assign the same amount of space to each plot by default,
+but this can be controlled with the `widths` and `heights` argument in
+`plot_layout()`. This can take a numeric vector giving their relative
+sizes (e.g. `c(2, 1)` will make the first plot twice as big as the
+second). Modify the code below so that the middle plot takes up half of
+the total space:
+
+    p <- ggplot(mtcars) + 
+      geom_point(aes(x = disp, y = mpg))
+    p + p + p
+
+## ggplot2 - animation - 1 {.smaller}
+
+-   gganimate package
+-   gganimate extends the API and grammar to describe animations
+-   many different transitions that control how data is interpreted for
+    animation
+
+```{r out.width='40%'}
+ggplot(economics) + 
+  geom_line(aes(x = date, y = unemploy))
+```
+
+## ggplot2 - animation - 2 {.smaller}
+
+-   transition_reveal: reveal data along a given dimension
+
+```{r out.width='50%'}
+ggplot(economics) + 
+  geom_line(aes(x = date, y = unemploy)) + 
+  transition_reveal(along = date)
+```
+
+## ggplot2 - animation - 3 {.smaller}
+
+-   transition_states: transition between several distinct stages of the
+    data
+
+```{r out.width='50%'}
+ggplot(mpg) + geom_bar(aes(x = factor(cyl))) + 
+  labs(title = 'Number of cars in {closest_state} by number of cylinders') + 
+  transition_states(states = year) + enter_grow() + 
+  exit_fade()
+```
+
+## Lab {.smaller}
+
+In the animation below (as in all the other animations) the changes
+happens at constant speed. How values change during an animation is
+called easing and can be controlled using the `ease_aes()` function.
+Read the documentation for `ease_aes()` and experiment with different
+easings in the animation, i.e. ease_aes("bounce-in-out")
+
+    mpg2 <- tidyr::pivot_longer(mpg, c(cty,hwy))
+    ggplot(mpg2) + 
+      geom_point(aes(x = displ, y = value)) + 
+      ggtitle("{if (closest_state == 'cty') 'Efficiency in city' else 'Efficiency on highway'}") + 
+      transition_states(name)
