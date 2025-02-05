@@ -1,0 +1,115 @@
+---
+title: "Strings"
+author: "Uroš Godnov"
+format: 
+  revealjs:
+    embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r}
+#| echo: false
+
+library("stringr")
+```
+
+## Package stringr
+
+```{r eval=FALSE}
+install.packages("stringr")
+```
+
+## Putting strings together with stringr
+
+- str_c()
+- the c is short for concatentate, a function that works like paste()
+
+```{r}
+str_c("Beautiful","day", sep=" ")
+
+str_c("Beautiful",NA, sep=" ")
+
+paste("Beautiful",NA, sep=" ") #base R
+```
+
+## Length {.smaller}
+
+```{r error=TRUE}
+nchar(c("Bruce", "Wayne"))
+stringr::str_length(c("Bruce", "Wayne"))
+
+#factors
+f<-factor(c("good","good", "moderate", "bad"))
+nchar(f) #nchar throws error
+stringr::str_length(f)
+```
+
+## Extracting substrings
+
+- str_sub()
+- extracts parts of strings based on their location
+- first argument, string, is a vector of strings
+- the arguments start and end specify the boundaries of the piece to extract in characters
+- both start and end can be negative integers, in which case, they count from the end of the string
+
+```{r}
+str_sub(c("Bruce", "Wayne"), 1, 4)
+str_sub(c("Bruce", "Wayne"), -3, -1)
+```
+
+## Matches {.smaller}
+
+- str_detect(): answers the question: Does the string contain the pattern?
+- str_subset(): subsetting strings based on match
+- str_count(); counting matches
+
+```{r}
+pizzas <- c("cheese", "pepperoni", "sausage and green peppers")
+
+str_detect(pizzas, pattern = "pepper")
+
+str_subset(pizzas, pattern = fixed("pepper"))
+
+str_count(pizzas, pattern = fixed("pepper"))
+
+str_count(pizzas, pattern = fixed("e"))
+
+```
+
+## Parsing strings into variables
+
+str_split(): pull apart raw string data into more useful variables
+
+```{r}
+date_ranges <- c("23.01.2017 - 29.01.2017", "30.01.2017 - 06.02.2017")
+
+split_dates <- str_split(date_ranges, pattern = fixed(" - "))
+
+split_dates
+```
+
+## Replacing matches in strings
+
+```{r}
+ids <- c("ID#: 192", "ID#: 118", "ID#: 001")
+
+# Replace "ID#: " with ""
+id_nums <- str_replace(ids, "ID#: ", "")
+
+id_nums
+
+phone_numbers <- c("510-555-0123", "541-555-0167")
+
+str_replace_all(phone_numbers, "-", ".")
+```
+
+## Lab
+
+- open names.txt and copy the content
+- you’ll turn a vector of full names, like “Bruce Wayne”, into abbreviated names like “B. Wayne”. This requires combining str_split(),  str_sub() and str_c().
+- do task using str_split with simplify=TRUE
+- calculate how many names end with a, h, s and e.
+
