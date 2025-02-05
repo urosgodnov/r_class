@@ -1,0 +1,1195 @@
+---
+title: "Tidyverse"
+author: "Uroš Godnov"
+format:
+  revealjs:
+    theme: simple 
+    slide-number: true
+    embed-resources: true
+    preview-links: auto
+    footer: "uros.godnov@gmail.com"
+    transition: slide
+    background-transition: fade
+    code-line-numbers: true
+execute:
+  echo: true
+  warning: false
+---
+
+```{r}
+#| echo: false
+
+library(tidyverse)
+library(tidyr)
+library(knitr)
+library(readxl)
+library(broom)
+library(estimatr)
+library(gt)
+library(glue)
+library(lubridate)
+```
+
+# Tidyverse
+
+## Tidyverse - 1
+
+- the tidyverse is an opinionated collection of R packages designed for data science
+- all packages share an underlying philosophy ('tidy') and common APIs
+
+```{r}
+#| echo: false
+
+include_graphics("./Pictures/tidyverse1.jpg")
+```
+
+## Tidyverse - 2
+
+```{r}
+#| echo: false
+
+include_graphics("./Pictures/tidyverse2.jpg")
+```
+
+## Tidyverse - 3
+
+```{r}
+#| echo: false
+
+include_graphics("./Pictures/tidyverse3.jpg")
+```
+
+## Tidyverse - 4
+
+```{r}
+#| echo: false
+
+include_graphics("./Pictures/tidyverse4.jpg")
+```
+
+## Dplyr
+
+- Hadley Wickham
+- transforming data
+- writing grammar with pipe operator (%>%)
+- pipe operator in magrittr
+- spread and gather in tidyr
+
+## Grammar - 1
+
+- select: return a subset of the columns of a data frame, using a flexible notation
+- filter: extract a subset of rows from a data frame based on logical conditions
+- arrange: reorder rows of a data frame
+- rename: rename variables in a data frame
+
+## Grammar - 2
+
+- group_by() takes an existing tbl and converts it into a grouped tbl where operations are performed  "by group". ungroup() removes grouping
+- mutate: add new variables/columns or transform existing variables
+- summarise / summarize: generate summary statistics of different variables in the data frame,  possibly within strata
+- %>%: the “pipe” operator is used to connect multiple verb actions together into a pipeline
+
+## Select - 1
+
+- select(data.frame, columns)
+- select(data.frame, column1:column3) – selects col1, col2, col3
+- select(data.frame, -(col1:col3)) – selects all columns except col1 to col3
+- starts_with() and ends_with()
+- contains()
+
+## Select - 2 {.smaller}
+
+- using across to specify conditions
+- in the past select_if, select_all
+
+```{r}
+#| echo: true
+
+ 
+df1<-iris%>%select_if(is.factor)
+head(df1,2)
+
+df1<-iris%>%select(where(is.factor))
+head(df1,2)
+
+df2<-df1%>%select_all(toupper)
+head(df2,2)
+
+df2 <- df1 %>%
+  rename_with(toupper, everything())
+
+head(df2,2)
+```
+
+## Complex select - 1
+
+- where replaces if
+- combining where with any_of or all_of 
+
+```{r}
+df1<-iris%>%select(where(is.factor))
+head(df1,2)
+```
+
+## Complex select - 2 {.smaller}
+
+ - where & any_of
+
+```{r}
+#| echo: False
+df <- tibble(
+  name = c("Alice", "Bob", "Charlie"),
+  age = c(23, 35, 45),
+  salary = c(50000, 60000, 70000),
+  department = c("Sales", "Marketing", "IT")
+)
+
+df
+```
+
+```{r}
+interested_cols <- c("age", "salary", "experience")
+
+# Select columns that are numeric and whose names are in interested_cols
+result <- df %>%
+  select(
+    where(is.numeric) & any_of(interested_cols)
+  )
+
+result
+```
+
+## Complex select - 3 {.smaller}
+
+ - where & all_of
+ - all_of is strict
+
+```{r}
+#| error: True
+interested_cols <- c("age", "salary", "experience")
+
+# Select columns that are numeric and whose names are in interested_cols
+result <- df %>%
+  select(
+    where(is.numeric) & all_of(interested_cols)
+  )
+
+```
+
+
+## %>%
+- pipe operator
+- stringing together multiple dplyr functions in a sequence of operations
+first(x) %>% second %>% third
+- from R 4.1 you have native pipe  |> 
+
+## Arrange
+
+- orders dataframe according to variables 
+- arrange(data.frame, col1)
+- arrange(data.frame, desc(col1))
+
+```{r}
+iris%>%select(contains("Sepal"))%>%arrange(desc(Sepal.Width))%>%head(3)
+```
+
+## Rename - 1
+
+- renames columns
+- rename(dataframe, newcol1=col1,newcol2=col2)
+- new name is on the left side
+
+```{r}
+iris%>%select(contains("Sepal"))%>%arrange(desc(Sepal.Width))%>%
+  rename(SepalW=Sepal.Width,
+         SepalL=Sepal.Length)%>%head(3)
+```
+
+## Rename - 2
+
+- rename_with(.data, .fn, .cols = everything(), ...)
+
+```{r}
+colName<-function(x) {
+  tmp<-stringr::str_sub(x,1,7)
+  return(gsub("\\.","",tmp))}
+iris %>% 
+  rename_with(colName, contains("Sepal")) %>% 
+    head(3)
+```
+
+
+## Rename (advanced) - 3 {.smaller}
+
+```{r}
+#| echo: False
+df <- tibble(
+  old_name1 = c(1, 2, 3),
+  old_name2 = c("A", "B", "C"),
+  old_name3 = c(TRUE, FALSE, TRUE)
+)
+
+name_mapping_df <- tibble(
+  old_name = c("old_name1", "old_name2", "old_name3"),
+  new_name = c("new_name1", "new_name2", "new_name3")
+)
+
+df
+
+name_mapping_df
+```
+
+
+```{r}
+df_renamed <- df %>%
+  rename_with(
+    ~ name_mapping_df$new_name[match(.x, name_mapping_df$old_name)],
+    .cols = everything()
+  )
+
+df_renamed
+```
+
+
+## Summarise - 1 {.smaller}
+
+- create one or more scalar variables summarizing the variables of an existing tb
+- powerfull with group_by clause
+
+```{r}
+iris%>%select(-Species)%>%
+  summarise(numberOfRows=n())
+
+iris%>%select(-Species)%>%
+  summarise(median=median(Petal.Length),
+            mean=mean(Petal.Length))
+```
+
+## Summarise - 2 {.smaller}
+
+- summarise_at(): the input is character vector 
+- summarise_if(): using predicate function
+- superseded with across function in dplyr v1.0.0
+
+```{r}
+columns<-c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width") 
+
+iris%>%summarise_at(columns,.funs=list(mean, median))
+iris%>%summarise_if(is.numeric,.funs=list(mean, median))
+```
+
+## Summarise - 3 {.smaller}
+
+- across: applies funtion(s) to a set of colummns
+- across(.cols = everything(), .fns = NULL, ..., .names = NULL)
+
+```{r}
+columns<-c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width") 
+iris%>%summarise(across(.cols=all_of(columns),.fns=list(mean, median)))
+iris%>%summarise(across(.cols=is.numeric,.fns=list(mean, median)))
+```
+
+
+## Mutate - 1 {.smaller}
+
+- computes new variables
+- related verb transmute() which drops non transformed variables
+
+
+```{r}
+iris %>% 
+  mutate(AverageLength=(Sepal.Length+Petal.Length)/2,
+              AverageWidth=(Sepal.Width+Petal.Width)/2)%>%
+  head(3)
+```
+
+
+## Mutate - 2 {.smaller}
+
+- mutate_at, mutate_if
+- mutate+across
+
+```{r echo=TRUE}
+
+iris%>%mutate_if(is.numeric, as.character)%>%head(.,3)
+iris%>%mutate(across(.cols=is.numeric, .fns=as.character))%>%head(3)
+```
+
+
+## Lab
+
+- open dplyr.txt and complete the excercises
+
+## Group_by - 1
+
+- used to generate summary statistics from the data frame within strata defined by a variable
+
+```{r}
+iris%>%group_by(Species)%>%summarise(across(.fns=list(mean, median)))
+```
+
+## Group_by - 2
+
+- what do we want, best seller overall or by region? 
+
+```{r}
+#| echo: False
+sales_data <- tibble(
+  salesperson = c('Alice', 'Bob', 'Catherine', 'Alice', 'Bob', 'Catherine', 'Alice', 'Bob', 'Catherine'),
+  region = c('East', 'East', 'East', 'West', 'West', 'West', 'North', 'North', 'North'),
+  sales = c(300, 250, 450, 500, 400, 550, 600, 350, 500)
+)
+
+sales_data
+```
+
+## Group_by - 3 {.smaller}
+
+- using .by instead of group_by()
+- .by works only for current summarization
+
+```{r}
+#| code-line-numbers: "2"
+sales_data %>%
+  group_by(region) %>% 
+  summarise(total_sales = sum(sales))
+
+```
+
+```{r}
+#| code-line-numbers: "3"
+sales_data %>%
+  summarise(total_sales = sum(sales),
+            .by="region")
+```
+
+
+## Slice helpers - 1 {.smaller}
+
+- top_n(), sample_n(), sample_frac() 
+- v1.0.0: slice_min(), slice_max(), slice_head(), slice_tail(), slice_sample()
+
+```{r}
+iris%>%top_n(2, wt=Petal.Width)
+iris%>%slice_max(order_by = Petal.Width, n=2)
+```
+
+## Slice helpers - 2 {.smaller}
+
+- without ties
+```{r}
+iris%>%slice_max(order_by = Petal.Width, n=2, with_ties=FALSE)
+```
+
+- random selection
+```{r}
+iris%>%sample_frac(size=0.03)
+```
+
+## Slice helpers - 3 {.smaller}
+
+- random selection with slice_sample()
+```{r }
+iris%>%slice_sample(prop=0.03)
+```
+
+## Lab
+
+- import Master.csv
+- number of players by year of birth n()
+- number of players per birthCountry (asc)
+- average weight in kg per birthCountry (desc) where number of  per birthcountry>5
+  help:
+  - select birthyear
+  - group by
+  - summarise (use function n())
+  - arrange
+
+## Window rank functions - 1{.smaller}
+
+- row_number
+- ntile 
+- min_rank
+- dense_rank
+
+```{r}
+df<-iris%>%slice_sample(n=10)
+df%>%mutate(id=row_number(), 
+            groups=ntile(Species,5),
+            minrank=min_rank(Species), 
+            denserank=dense_rank(Species))%>%
+  select(-contains("Petal"),-contains("Sepal"),) 
+```
+
+## Window rank functions - 2 {.smaller}
+
+- how to add row_numbers in every group by decreasig size of Petal.Length
+- how to get the second largest?
+
+```{r }
+df<-iris%>%slice_sample(n=10)
+df%>%group_by(Species)%>%arrange(desc(Petal.Length))%>%
+  mutate(id=row_number())%>%
+  ungroup()%>%
+  select(Petal.Length, Species, id)%>%arrange(Species)
+```
+
+## Lab
+
+- import Master.csv
+- show the second heaviest man from the first 5 contries with the largest average weight in kg per birthCountry (desc) where number of  per birthcountry>5
+
+  
+## Pivot_longer and pivot_wider (tidyr) - 1 {.smaller}
+
+- successors to spread and gather
+- pivot_wider
+
+```{r echo=TRUE}
+df<-airquality%>%select(Month, Day, Temp)%>%dplyr::filter(Month %in% c(5,6) & Day<4)%>%
+  pivot_wider(names_prefix = "Month ", names_from=Month, values_from=Temp)
+df
+```
+
+## Pivot_longer and pivot_wider (tidyr) - 2 {.smaller}
+
+- pivot_longer
+
+```{r}
+df<-data.frame(day=c("Monday", "Tuesday","Wednesday"),month_aug=c(46,76,32),
+               month_sep=c(62,67,23), month_oct=c(43,NA,31))
+df
+```
+
+```{r}
+df%>%pivot_longer(cols=month_aug:month_oct, names_to = "Month", 
+                  values_to = "Temperature")%>%
+  head(6)
+
+```
+
+## Pivot_longer and pivot_wider (tidyr) - 3 {.smaller}
+
+- using names_prefix and values_drop_na
+
+```{r}
+df %>% 
+  pivot_longer(cols=month_aug:month_oct,names_prefix="month_", 
+                  names_to = "Month", values_to = "Temperature", values_drop_na=TRUE) %>%
+  head(6)
+```
+
+
+## Pivot_longer and pivot_wider (tidyr) - 4 {.smaller}
+
+- using pivot_longer with values_transform
+
+```{r}
+#| echo: False
+
+df <- tibble(
+  name = c("Alice", "Bob", "Charlie"),
+  height_cm = c(170, 180, 175),
+  weight_kg = c(65, 75, 68),
+  class=c("A","A","B")
+)
+df
+```
+
+```{r}
+#| error: True
+df_long <- df %>%
+  pivot_longer(
+    cols = c(height_cm, weight_kg, class),
+    names_to = "measurement_type",
+    values_to = "value"
+  )
+
+df_long
+```
+
+## Pivot_longer and pivot_wider (tidyr) - 5 
+
+```{r}
+#| code-line-numbers: "6"
+df_long <- df %>%
+  pivot_longer(
+    cols = c(height_cm, weight_kg, class),
+    names_to = "measurement_type",
+    values_to = "value",
+    values_transform = list(value=as.character)
+  )
+
+df_long
+```
+
+## Lab
+
+- import norway_new_car_sales_by_model.xlsx
+- show the number of sold cars by manufacturer (rows) and years(columns)
+- use spread and pivot_wider
+
+## fill() - 1
+
+- carry-forward function
+
+```{r}
+data <- tibble(
+  time = 1:5,
+  measurement = c(NA, 3, NA, NA, 5)
+)
+
+data
+```
+
+## fill() - 2
+
+```{r}
+filled_data <- data %>%
+  fill(measurement, .direction = "down")
+
+filled_data
+```
+
+
+## User defined functions in dplyr - 1 {.smaller}
+
+- using in mutate
+- function has to be vectorized; if not, use rowwise() to go row by row
+
+- vectorized function
+```{r}
+
+fTOc<-function(x) {round((x-32)*5/9,0)}
+input<-c(100, 102, 99)
+fTOc(input)
+```
+
+- nonvectorized function
+
+```{r}
+stupidFunction<-function(x,y){return(sum(x,y))}
+
+airquality%>%mutate(something=stupidFunction(Month, Day))%>%head(3)
+```
+
+## User defined functions in dplyr - 2 {.smaller}
+
+- using rowwise() operation
+```{r }
+airquality%>%rowwise()%>%mutate(something=stupidFunction(Month, Day))%>%head(3)
+```
+- or add id and use group_by(id)
+```{r}
+airquality%>%mutate(id=row_number())%>%group_by(id)%>%
+  mutate(something=stupidFunction(Month, Day))%>%ungroup()%>%head(3)
+```
+
+## User defined functions in dplyr - 3 {.smaller}
+
+- use Vectorize() function 
+
+```{r}
+stupidFunction_v<-Vectorize(stupidFunction)
+airquality%>%  
+  mutate(something=stupidFunction_v(Month, Day))%>%head(5)
+
+
+```
+
+## Lab
+- use Titanic dataset
+- write a function, which will return the following:
+    - if a person was a child and didn't survive, the function should  return "Poor child"
+    - if a person was a woman and didn't survive,  the function should  return "Oh no"
+    - if a person was an adult man and did survive,  the function should  return "You shouldn't save you if there were still women and children aboard"
+    
+## Lab
+
+- take dataset mtcars
+- write a function which will tranform mpg to l/100 kms and assign values to a new column consumption 
+- display mean and median for mpg, hp, consumption
+- identify the worst and best economic car 
+
+## Join - 1
+
+- inner_join
+- left_join
+- right_join
+- full_join
+
+## Join - 2
+
+```{r}
+
+#| echo: false
+
+include_graphics("./Pictures/join.jpg")
+```
+
+## Join - 3
+
+- semi_join
+- anti_join
+
+```{r}
+
+#| echo: false
+include_graphics("./Pictures/semijoin.jpg")
+```
+
+## Examples {.smaller}
+
+```{r}
+band_members%>%head()
+
+band_instruments%>%head()
+```
+
+## Examples {.smaller}
+
+```{r}
+band_members %>% inner_join(band_instruments)
+band_members %>% left_join(band_instruments)
+```
+
+## Examples {.smaller}
+
+```{r echo=TRUE}
+band_members %>% right_join(band_instruments)
+band_members %>% full_join(band_instruments)
+```
+
+## Examples {.smaller}
+
+- A semi join differs from an inner join because an inner join will return one row of x for each matching row of y, where a semi join will never duplicate rows of x
+
+```{r}
+band_members %>% semi_join(band_instruments)
+band_members %>% anti_join(band_instruments)
+```
+
+## Joining by many columns, different names - 1 {.smaller}
+
+- inner_join(df1, df2, by=c("a1"="b2","z3"="u1"))
+
+```{r}
+d1 <- data_frame(
+  x = letters[1:3],
+  y = LETTERS[1:3],
+  a = rnorm(3)
+  )
+
+d2 <- data_frame(
+  x2 = letters[3:1],
+  y2 = LETTERS[3:1],
+  b = rnorm(3)
+  )
+
+d1 %>% 
+  left_join(d2, by = c("x" = "x2", "y" = "y2"))
+```
+
+## Joining by many columns, different names - 2 
+
+- new syntax from dplyr v1.1.0
+- more robust syntax
+
+```{r}
+#| code-line-numbers: "3"
+d1 %>% 
+  left_join(d2, 
+            by=join_by(x == x2, y == y2))
+```
+
+## Lab
+
+- download csv 2019 version of data from http://www.seanlahman.com/baseball-archive/statistics/
+- extract master.csv and FieldingOF.csv
+- meta data are available at http://www.seanlahman.com/files/database/readme2019.txt
+- Display the name (firstname+lastname) of the player who had the second highest number of games played in center field for each year from 1990 to 2000
+
+## Lag and lead {.smaller}
+
+- find the "previous" (lag()) or "next" (lead()) values in a vector
+
+```{r}
+r<-data.frame(year=2005:2014,population=sample(14000:15000, 10, replace=T))
+r<-cbind(r,lag(r$population))
+names(r)<-c("year","pop","pop1")
+r%>%
+  mutate(index=round(100*(1+(pop-pop1)/pop1),2))%>%
+  select(year,pop,pop1,index)
+```
+
+## Nested ifelse or case_when - 1 {.smaller}
+
+- nested ifelse or tidyverse if_else
+
+```{r}
+#| echo: False
+
+people <- tibble(
+  name = c('Alice', 'Bob', 'Catherine', 'David', 'Emma'),
+  age = c(25, 58, 33, 15, 46)
+)
+
+people
+```
+
+```{r}
+people <- people %>%
+  mutate(
+    age_group = if_else(
+      age < 18, 'Child',
+      if_else(
+        age <= 35, 'Young Adult',
+        if_else(
+          age <= 60, 'Adult',
+          'Senior' # Fallback condition if none of the above are TRUE
+        )
+      )
+    )
+  )
+people
+
+```
+
+## Nested ifelse or case_when - 2 {.smaller}
+
+- case_when
+
+```{r}
+#| code-line-numbers: "3|4-6|7"
+people <- people %>%
+  mutate(
+    age_group = case_when(
+      age < 18 ~ 'Child',
+      age <= 35 ~ 'Young Adult',
+      age <= 60 ~ 'Adult',
+      TRUE ~ 'Senior'  # Fallback condition if none of the above are TRUE
+    )
+  )
+
+# View the updated data
+people
+
+```
+
+## Nested ifelse or case_when - 3 {.smaller}
+
+- newer syntax
+- .default + "="
+
+```{r}
+#| code-line-numbers: "7"
+people <- people %>%
+  mutate(
+    age_group = case_when(
+      age < 18 ~ 'Child',
+      age <= 35 ~ 'Young Adult',
+      age <= 60 ~ 'Adult',
+      .default = 'Senior'  # Fallback condition if none of the above are TRUE
+    )
+  )
+
+# View the updated data
+people
+
+```
+
+
+## Unite and separate - 1 {.smaller}
+
+- unite combines multiple columns into a single column
+
+```{r}
+data<-as.data.frame(HairEyeColor)
+head(data,4)
+```
+
+- uniting Hair, Eye and Sex into Properties column
+
+```{r}
+data%>%unite("Properties",Hair:Sex, sep="/")%>%
+  head(4)
+```
+
+## Unite and separate - 2 {.smaller}
+
+- separate turns a single character column into multiple columns
+- splitting the values of the column wherever a separator character appears
+
+```{r}
+df<-data%>%unite("Properties",Hair:Sex, sep="/")
+df%>%separate(Properties, into=c("A","B","C"),sep="/")%>%
+  head(3)
+```
+
+- what about in this case?
+```{r}
+df<-data.frame(name=c("Sam Jones Sr. Mr.",
+                      "Lady Gaga Singer",
+                      "Valentino Rossi Mr. (Junior) son")); df
+
+```
+
+## Unite and separate - 3 {.smaller}
+
+- separate has extra atribute, which decides, what to with "extra data"
+
+```{r}
+df%>%separate(name, into=c("First_name","Last_Name"), extra="drop")
+```
+- fill: what happens when there are not enough pieces
+
+```{r}
+df%>%separate(name,
+into=c("First_name","Last_Name","Something","Title"), extra="drop", fill="left")
+```
+
+## Nest and unnest {.smaller}
+
+- nesting creates a list-column of data frames
+- nesting is implicitly a summarising operation
+- convenient for bulding the models 
+
+```{r}
+
+df<-iris%>%nest(-Species)
+df
+
+```
+
+```{r}
+df%>%unnest()%>%head(2)
+```
+
+## Lab {.smaller}
+```
+1. Take airmiles dataset and transform dataframe to a column with name Airmiles. 
+Add a new column called Year from 1937 to 1960.
+Calculate index for Airmiles. Which year has the highest index.
+2. Take dates_df dataframe and split date column into columns month, day and year!
+dates_df <- data.frame(date = c("5/24/1930",
+                                "5/25/1930",
+                                "5/26/1930",
+                                "5/27/1930",
+                                "5/28/1930"),
+                       stringsAsFactors = FALSE)
+3. Create 100 random numbers between 1 and 95 and transform it to a column Age in a dataframe 
+People. 
+Discretize Age into the following age groups:
+- 1:20
+- 21:45
+- 46:55
+- 56:70
+- 71:
+Calculate summary statistics. 
+```
+
+## map family functions - 1 {.smaller}
+
+- purrr package
+- map familiy functions transform their input by applying a function to each element of a list or atomic vector and returning an object of the same length as the input
+- map(): returns a list
+- map_lgl(), map_int(), map_dbl() and map_chr() return an atomic vector of the indicated type
+- map_df(), map_dfr() and map_dfc() return a data frame created by row-binding and column-binding 
+- there are also map_if and map_at functions, where logic is the same as with _if and _at functions till now.
+
+```{r}
+airquality%>%select(Ozone)%>%
+  map(mean)
+```
+## map family functions - 2 {.smaller}
+
+- one function, no arguments: map
+- one function with 2 arguments: map2
+- one function with many arguments: pmap
+
+## map family functions - 3 {.smaller}
+
+- passing a parameter
+```{r}
+
+airquality%>%select(Temp)%>%
+  map(mean)
+```
+
+## map family functions - 4 {.smaller}
+
+- reading files with the same structure, map_df
+```{r}
+files<-list.files(pattern = "*.csv", path = "./Mtcars/",  full.names = TRUE)
+
+allDF<-map_df(files, read.csv2)
+```
+
+- calling more than 1 function in map
+- invoke, invoke_map: retired
+```{r}
+airquality%>%select(Ozone)%>%invoke_map(.f=c("mean", "max"),na.rm=TRUE)
+```
+
+## map family functions - 5 {.smaller}
+
+```{r}
+airquality%>%select(Month, Day)%>%mutate(Something=map2_int(Month,Day,sum))%>%
+  head(3)%>%as_tibble()
+airquality%>%select(Month, Day)%>%mutate(Something=map2_chr(Month,Day,sum))%>%
+  head(3)%>%as_tibble()
+```
+
+## map family functions - 6 {.smaller}
+
+- map handles vectorization
+```{r}
+stupidFunction<-function(x,y){return(sum(x,y))}
+
+airquality%>%select(Month, Day)%>%
+  mutate(Something=map2_chr(Month,Day,stupidFunction))%>%
+  head(3)%>%as_tibble()
+```
+
+
+## map family functions - 7 {.smaller}
+
+- pmap: arbitrary number of arguments
+```{r}
+airquality%>%select(Wind,Temp, Month, Day)%>%
+  mutate(Something=pmap_dbl(list(Wind,Temp,Month,Day),sum))%>%
+  head(3)%>%as_tibble()
+airquality%>%select(Wind,Temp, Month, Day)%>%
+  mutate(Something=pmap_chr(list(Wind,Temp,Month,Day),sum))%>%
+  head(3)%>%as_tibble()
+```
+
+## map family functions - 8 {.smaller}
+
+- passing additional arguments to function
+```{r}
+airquality%>%select(Ozone,Day)%>%dplyr::filter(is.na(Ozone))%>%
+  mutate(Something=map2_int(Ozone,Day,max))%>%
+  head(3)%>%as_tibble()
+airquality%>%select(Ozone,Day)%>%dplyr::filter(is.na(Ozone))%>%
+  mutate(Something=map2_int(Ozone,Day,max, na.rm=TRUE))%>%
+  head(3)%>%as_tibble()
+```
+
+## map family functions - 9 {.smaller}
+
+- passing more than one argument to called function
+```{r}
+files<-list.files(pattern = "*.csv", path = "./Mtcars/",  full.names = TRUE)
+
+allDF<-map_df(files, read.csv2, skip=1,header=FALSE)
+```
+
+## map family functions - 10
+
+- progress bar
+
+```{r}
+#| eval: False
+x<-map(1:100,\(x) Sys.sleep(0.1), .progress="TRUE")
+```
+## map family functions - 11
+
+- map always returns a list
+- we can control behavior with map_vec
+
+
+```{r}
+map(1:3, \(x) Sys.Date()+x)
+map_vec(1:3, \(x) Sys.Date()+x)
+```
+## map family functions - 12
+
+- list_c()
+- list_rbind()
+- list_cbind() 
+
+```{r}
+map(1:3, \(x) rep(x,x))
+
+map(1:3, \(x) rep(x,x))%>%list_c()
+
+```
+## map family functions - 13 {.smaller}
+
+- remember this?
+
+```r
+files <- list.files(pattern = "*.csv", path = "./Mtcars/",  full.names = TRUE)
+
+lst_of_frames <-list()
+for (i in 1:length(files)){
+
+  x<-files[i]
+  df<-read.csv2(x)
+  lst_of_frames[[i]]<-df
+}
+dfAll<-do.call("rbind",lst_of_frames)
+```
+- new code
+
+```{r}
+#| eval: False
+f<-list.files(pattern = "*.csv", path = "./Mtcars/",  full.names = TRUE) 
+
+res<-map(f, \(x) read.csv2(x)) %>% list_rbind()
+
+```
+
+## Example of more complex use - 1 {.smaller}
+
+- creating a linear model for every number of cyl
+- when functions get more complex there are basically two ways to call them either with the tilde notation or with a normal anonymous function
+```{r}
+call1<-mtcars%>%select(cyl,mpg,wt)%>%
+  nest(-cyl)%>%mutate(model=map(data,function(x) lm(formula=mpg~wt,data=x)))
+
+call2<-mtcars%>%select(cyl,mpg,wt)%>%
+  nest(-cyl)%>%mutate(model=map(data,~lm(formula=mpg~wt,data=.x)))
+call1
+```
+
+## Example of more complex use - 2 {.smaller}
+
+- pluck
+```{r}
+call1%>%pluck("data",1)
+```
+
+
+## Example of more complex use - 3 {.smaller}
+
+- making tidy models
+```{r}
+call1%>%mutate(tidyModel=map(model, tidy))%>%
+  unnest(tidyModel)
+```
+
+
+## Lab
+
+- Write a function called n_unique, which will return the number of distinct values. Apply this function to a dataframe mtcars. Which column has a highest variability (most different distinct values)?
+- Use the appropriate map() function to:
+  - Compute the standard deviation of every column in a numeric data frame (mtcars)
+  - Compute the standard deviation of every numeric column in a mixed data frame(iris)
+  - Compute the number of levels for every factor in a data frame (iris)
+
+## Tabular representation with gt()
+
+- gt package
+
+```{r echo=FALSE, out.width="70%"}
+include_graphics("./Pictures/gt.jpg")
+```
+
+## Simple gt object
+
+```{r}
+
+df<-sp500 %>%
+  dplyr::filter(between(date,ymd("2015-12-24"),ymd("2015-12-31"))) %>%
+  select(-adj_close) %>% arrange(date) 
+  df %>% gt()
+```
+
+## Adding title and formating columns {.smaller}
+
+- fmt_*
+
+```{r}
+dfGT<-df %>% gt() %>%
+  tab_header(title="SP500", 
+             subtitle="Last week of 2015") %>% 
+   fmt_date(columns = vars(date),date_style = 7) %>% 
+   fmt_currency(columns = vars(open, high, low, close),
+    currency = "EUR")
+
+dfGT
+```
+
+## Adding groups - 1 {.smaller}
+
+```{r}
+dfgt <- sp500 %>% 
+  mutate(year=year(date),wday=wday(date, label=TRUE, abbr=FALSE, locale = "english"))%>%
+  select(year, wday, high, low) %>% 
+  group_by(year, wday) %>% 
+  summarise(high=mean(high), low=mean(low)) %>% 
+  dplyr::filter(year %in% c(2014,2015)) %>% 
+  ungroup()
+
+dfgt
+```
+
+## Adding groups - 2 {.smaller}
+
+- rowname_col
+```{r}
+dfgt %>% gt(rowname_col = "year") %>% 
+  fmt_currency(columns=vars(high,low), currency = "EUR")
+  
+```
+
+## Adding groups - 3 {.smaller}
+
+- groupname_col
+
+```{r}
+dfgtL<-dfgt %>% gt(groupname_col = "year") %>% fmt_currency(columns=vars(high,low),                           currency = "EUR")
+dfgtL
+```
+
+
+## Adding summary labels - 1 {.smaller}   
+
+- summary_rows
+
+```{r}
+dfgt %>% dplyr::filter(wday %in% c("Monday","Tuesday")) %>% 
+  gt(groupname_col = "year") %>% fmt_currency(columns=vars(high,low),             
+    currency = "EUR") %>% 
+    summary_rows(
+    columns = vars(high, low),
+    fns = list(average = "mean"))
+```
+
+## Adding summary labels - 2 {.smaller}   
+
+- summary_rows by groups
+
+```{r eval=FALSE}
+dfgt %>% dplyr::filter(wday %in% c("Monday","Tuesday")) %>% 
+  gt(groupname_col = "year", rowname_col ="wday") %>% 
+  fmt_currency(columns=vars(high,low),currency = "EUR") %>% 
+    summary_rows(
+    groups = TRUE,
+    columns = vars(high, low),
+    fns = list(
+      avg = ~mean(., na.rm = TRUE),
+      total = ~sum(., na.rm = TRUE),
+      s.d. = ~sd(., na.rm = TRUE)
+    )
+  )
+```
+
+## Adding summary labels - 4 {.smaller}  
+
+```{r echo=FALSE}
+dfgt %>% dplyr::filter(wday %in% c("Monday","Tuesday")) %>% 
+  gt(groupname_col = "year", rowname_col ="wday") %>% 
+  fmt_currency(columns=vars(high,low),currency = "EUR") %>% 
+    summary_rows(
+    groups = TRUE,
+    columns = vars(high, low),
+    fns = list(
+      avg = ~mean(., na.rm = TRUE),
+      total = ~sum(., na.rm = TRUE),
+      s.d. = ~sd(., na.rm = TRUE)
+    )
+  )
+```
