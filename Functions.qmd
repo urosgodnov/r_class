@@ -1,0 +1,536 @@
+---
+title: "Functions"
+author: "Uroš Godnov"
+format: 
+  revealjs:
+    embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+---
+
+## R if statement
+
+```{r eval=FALSE}
+if (test_expression) {
+    statement
+  }
+```
+
+```{r}
+x <- 5
+if(x > 0){
+    print("Positive number")
+  }
+```
+
+## If…else statement
+
+```{r eval=FALSE}
+if (test_expression) {
+    statement1
+  }else {
+    statement2
+  }
+```
+
+
+```{r}
+x <- -5
+if(x > 0){
+    print("Non-negative number")
+  } else {
+    print("Negative number")
+  }
+```
+
+## If…else Ladder {.smaller}
+
+- the if…else ladder (if…else…if) statement allows you execute a block of code among more than 2 alternatives
+
+```{r eval=FALSE}
+if ( test_expression1) {
+    statement1
+  } else if ( test_expression2) {
+    statement2
+  } else if ( test_expression3) {
+    statement3
+  } else {
+    statement4
+  }
+```
+```{r}
+x <- 0
+if (x < 0) {
+    print("Negative number")
+  } else if (x > 0) {
+    print("Positive number")
+  } else
+    print("Zero")
+```
+
+## R ifelse() Function
+
+- shorthand function to the traditional if…else statement
+- ifelse(test_expression, x, y)
+
+```{r}
+  a = c(5,7,2,9)
+  ifelse(a %% 2 == 0,"even","odd")
+```
+
+## Vectors - 1
+
+- learning to use vectorized operations is a key skill in R
+
+```{r}
+a <- 1:10
+b <- 1:10
+res <- numeric(length = length(a))
+for (i in seq_along(a)) {
+  res[i] <- a[i] + b[i]
+}
+res
+```
+
+
+## Vectors - 2
+
+```{r}
+a <- 1:10
+b <- 1:10
+
+res2 <- a + b
+res2
+```
+
+
+## Vectors - 3 {.smaller}
+
+- recycling
+
+```{r}
+#Silent
+a <- 1:10
+b <- 1:5
+a + b
+#Throws warning
+a <- 1:10
+b <- 1:7
+a + b
+```
+
+
+## For 
+
+- for loop is used to apply the same function calls to a collection of objects
+
+
+## For loop {.smaller}
+
+```{r eval=FALSE}
+for (val in sequence)
+  {
+    statement
+  }
+```
+```{r}
+x <- c(2,5,3,9,8,11,6)
+count <- 0
+for (val in x) {
+  if(val %% 2 == 0)  count = count+1
+  }
+print(count)
+```
+
+## While loop {.smaller}
+
+```{r eval=FALSE}
+while (test_expression){
+    statement
+  }
+```
+```{r}
+i <- 1
+while (i < 6) {
+    print(i)
+    i = i+1
+  }
+```
+
+## R break and next Statement - 1 {.smaller}
+
+```{r eval=FALSE}
+if (test_expression) {
+    break
+  }
+```
+
+- a break statement is used inside a loop (repeat, for, while) to stop the iterations and flow the control   outside of the loop
+
+```{r}
+x <- 1:5
+for (val in x) {
+    if (val == 3){
+      break
+    }
+    print(val)
+}
+```
+
+## R break and next Statement - 2 {.smaller}
+
+- a next statement is useful when we want to skip the current iteration of a loop without terminating it
+
+```{r eval=FALSE}
+if (test_condition) {
+    next
+  }
+```
+```{r}
+x <- 1:5
+for (val in x) {
+    if (val == 3){
+      next
+    }
+    print(val)
+  }
+```
+
+## R repeat loop {.smaller}
+
+- a repeat loop is used to iterate over a block of code multiple number of times
+- no condition check in repeat loop to exit the loop
+
+```{r eval=FALSE}
+repeat {
+    statement
+  }
+```
+```{r}
+x <- 1
+repeat {
+    print(x)
+    x = x+1
+    if (x == 6){
+      break
+    }
+  }
+```
+
+
+## Lab
+
+- open loops.txt and complete tasks
+
+## Apply family functions
+
+- apply -  apply over the margins of an array (e.g. the rows or columns of a matrix)
+- lapply - apply over an object and return list
+- sapply - apply over an object and return a simplified object (an array) if possible
+- vapply - similar to sapply but you specify the type of object returned by the iterations
+
+## Apply - 1 {.smaller}
+
+- apply() function is the base function
+- apply() function takes 3 arguments:
+  - data matrix
+  - row/column operation, 1 for row wise operation, 2 for column wise operation
+  - function to be applied on the data
+
+
+```{r}
+data(beavers)
+apply(t(beaver1),1,max)
+```
+
+## Apply - 2 {.smaller}
+
+- when 2 is passed as second  parameter the function  mean is applied column wise
+- we can also pass custom function instead of default functions  
+
+```{r}
+apply(mtcars,2,mean)
+head(apply(mtcars,2,function(x) x%%10), 4)
+```
+
+## Lapply {.smaller}
+
+- lapply function is applied for operations on list objects and returns a list object of same length of original set
+
+```{r}
+l = list(a=1:10,b=11:20)
+lapply(l, mean)
+```
+
+## Sapply 
+
+- sapply is wrapper class to lapply with difference being it returns vector or matrix instead of list object
+
+```{r}
+l = list(a=1:10,b=11:20)  # mean of values using sapply 
+sapply(l, mean)
+```
+
+## Tapply 
+
+- tapply() is a very powerful function that lets you break a vector into pieces and then apply some function to each of the pieces
+
+```{r}
+str(mtcars$cyl)
+
+tapply(mtcars$mpg,mtcars$cyl,mean)
+```
+
+
+## Lab
+
+- open apply.txt and complete tasks
+
+
+## R User Defined Functions - 1 
+
+```{r eval=FALSE}
+func_name <- function (argument) {
+                statement
+              }
+```
+```{r}
+pow <- function(x, y) {
+          # function to print x raised to the power y
+          result <- x^y
+          print(paste(x,"raised to the power", y, "is", result))
+            }
+```
+
+
+## R User Defined Functions - 2
+
+- calling a function
+- arguments by place or by name
+ 
+```{r}
+pow(8, 2) ## by location
+pow(x = 8, y = 2) ## by name
+pow(y = 2, x = 8) ## by name
+```
+
+
+## R User Defined Functions - 3 
+
+ - we can assign default values to arguments in a function in R
+
+```{r}
+pow <- function(x, y = 2) {
+           # function to print x raised to the power y
+          result <- x^y
+          print(paste(x,"raised to the power", y, "is", result))
+      }
+```
+
+## R User Defined Functions - 4 {.smaller}
+
+ - many a times, we will require our functions to do some processing and return back the result we can assign default values to arguments in a function in R
+ - this is accomplished with the return() function in R
+
+```{r}
+check <- function(x) {
+            if (x > 0) {
+                result <- "Positive"
+              }
+            else if (x < 0) {
+                result <- "Negative"
+              }
+            else {
+                result <- "Zero"
+              }
+            return(result)
+          }
+
+check(1)
+```
+
+
+## R User Defined Functions - 5 {.smaller}
+
+- if there are no explicit returns from a function, the value of the last evaluated expression is returned automatically in R
+
+```{r}
+check1 <- function(x) {
+              if (x > 0) {
+                  result <- "Positive"
+                }
+              else if (x < 0) {
+                  result <- "Negative"
+                }
+              else {
+                  result <- "Zero"
+                }
+                  result
+                }
+
+check1(1)
+```
+
+## R User Defined Functions - 6 {.smaller}
+
+- the return() function can return only a single object
+- if we want to return multiple values in R, we can use a list (or other objects) and return it
+
+```{r}
+multi_return <- function() {
+                  my_list <- list("color" = "red", "size" = 20, "shape" = "round")
+                  return(my_list) 
+                  }
+
+a <- multi_return()
+
+str(a)
+```
+
+## Scope - 1 {.smaller}
+
+- local variables are those variables which exist only within a certain part of a program like a function, and is released when the function call ends
+
+```{r}
+outer_func <- function() {
+                a <- 20
+                  inner_func <- function() {
+                                  a <- 30
+                                  print(a)
+                                  }
+                inner_func()
+                print(a)
+                }
+
+a <- 10
+outer_func()
+```
+
+## Scope - 2 {.smaller}
+
+- global variables can be read but when we try to assign to it, a new local variable is created instead
+- superassignment operator, <<-, is used
+
+```{r}
+outer_func <- function(){
+                inner_func <- function(){
+                                a <<- 30
+                                print(a)
+                              }
+                inner_func()
+                print(a)
+              }
+
+outer_func()
+```
+
+## Anonymous functions  - 1 {.smaller}
+
+- R doesn’t have a special syntax for creating a named function
+- f you choose not to give the function a name, you get an anonymous function
+
+```{r}
+(function(x = 4) x +7)(5)
+
+lapply(list(1,2,3), function(x) { 3 * x })
+```
+## Anonymous functions - 2 {.smaller} 
+
+- what about more than 1 argument?
+
+```{r}
+sapply(list(1,2,3), function(x,y) { 3 * x*y }, y=2)
+```
+
+- it is more conveniant to use mapply
+
+```{r}
+mapply(function(x,y,z) { 3 * x*y*z},list(1,2,3),MoreArgs=list(y=2,z=3))
+```
+
+
+## Lab
+
+- open functions.txt and complete tasks
+
+## TryCatch - 1 {.smaller} 
+
+- to write robust R code
+
+```{r eval=FALSE}
+tryCatch(
+    expr = {
+        # Your code...
+        # goes here...
+        # ...
+    },
+    error = function(e){ 
+        # (Optional)
+        # Do this if an error is caught...
+    },
+    warning = function(w){
+        # (Optional)
+        # Do this if an warning is caught...
+    },
+    finally = {
+        # (Optional)
+        # Do this at the end before quitting the tryCatch structure...
+    }
+)
+```
+
+## TryCatch - 2 {.smaller} 
+
+```{r error=TRUE }
+sqrt("a")
+
+tryCatch(sqrt("a"), error=function(e) print("You can't take the square root of a character!"))
+```
+
+```{r error=TRUE}
+
+sqrt(c(4, 9, "Covid19"))
+tryCatch(sqrt(c(4, 9, "Covid19")), error=function(e) NA)
+```
+
+## TryCatch - 3 {.smaller} 
+
+- hm, where is the problem?
+- remember implicit conversion?!
+```{r}
+sapply(c(4, 9, "Covid19"), function(x) tryCatch(sqrt(x), error=function(e) NA))
+```
+
+- now this should work
+```{r warning=FALSE}
+sapply(c(4, 9, "Covid19"), function(x) tryCatch(sqrt(as.numeric(x)), error=function(e) NA))
+```
+
+## TryCatch - 4 {.smaller} 
+
+- use of tryCatch in a loop
+
+```{r warning=FALSE}
+for (x in c(4, 9, "Covid19",16)){
+  
+   tryCatch(print(sqrt(as.numeric(x))), error=function(e) NA)
+}
+```
+
+## Lab {.smaller}
+
+- Rewrite this code with tryCatch()
+
+```{r eval=FALSE}
+divide<-function(x,y) {
+  if (y!=0){
+    print(x/y)
+  } else {print("Cannot divide by zero!")}
+}
+
+divide(4,2)
+divide(4,0)
+
+```
